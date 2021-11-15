@@ -1,4 +1,5 @@
 import styles from "./Card.module.scss"
+
 let Card = ({item, button, onButton, onTag}) => {
     return (
         <div className={styles.card}>

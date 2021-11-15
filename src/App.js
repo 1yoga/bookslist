@@ -4,13 +4,12 @@ import {useEffect, useState} from "react";
 import Content from "./Components/Content";
 import Navbar from "./Components/Navbar";
 import {Route} from "react-router-dom";
-// import { createBrowserHistory } from "history";
-// import qs from "qs";
+
 
 function App() {
 
     const [data, setData] = useState([]);
-    const [bookData, setBookData] = useState(data);
+    const [bookData, setBookData] = useState([]);
     const [inProgressData, setInProgressData] = useState([]);
     const [doneData, setDoneData] = useState([]);
 
@@ -56,7 +55,12 @@ function App() {
     const clearTagDone = () => {
         setDoneTags([])
     }
+    const load = () => {
+        setBookData(data)
+        setInProgressData([])
+        setDoneData([])
 
+    }
 
     const props = [
         {
@@ -65,6 +69,7 @@ function App() {
             data: bookData,
             button: "start reading",
             tags: toReadTags,
+            setTags: setToReadTags,
             count: bookData.length,
             onTag: addTagToRead,
             onButton: addToInProgress
@@ -75,6 +80,7 @@ function App() {
             data: inProgressData,
             button: "finished reading",
             tags: inProgressTags,
+            setTags: setInProgressTags,
             count: inProgressData.length,
             onTag: addTagInProgress,
             onButton: addToDone
@@ -85,6 +91,7 @@ function App() {
             data: doneData,
             button: "add to read",
             tags: doneTags,
+            setTags: setDoneTags,
             count: doneData.length,
             onTag: addTagDone,
             onButton: addToToRead
@@ -95,44 +102,32 @@ function App() {
         async function fetchData() {
             try {
                 const bookResponse = await axios.get('10-items.json')
-                setData(bookResponse.data.items)
+                await setData(bookResponse.data.items)
+
             } catch (error) {
                 alert("Ошибка при запросе данных")
                 console.error(error)
             }
         }
         fetchData()
-    }, [])
-
-    useEffect(() => {
         setBookData(JSON.parse(window.localStorage.getItem('bookData')));
         setInProgressData(JSON.parse(window.localStorage.getItem('inProgressData')));
         setDoneData(JSON.parse(window.localStorage.getItem('doneData')));
-    }, []);
+    }, [])
 
     useEffect(() => {
         window.localStorage.setItem('bookData', JSON.stringify(bookData));
+    }, [bookData]);
+    useEffect(() => {
         window.localStorage.setItem('inProgressData', JSON.stringify(inProgressData));
+    }, [inProgressData]);
+    useEffect(() => {
         window.localStorage.setItem('doneData', JSON.stringify(doneData));
-    }, [bookData, inProgressData, doneData]);
-
-
-    // const history = createBrowserHistory();
-    // useEffect(() => {
-    //     const filterParams = history.location.search.substr(1);
-    //     const filtersFromParams = qs.parse(filterParams);
-    //     console.log(history)
-    //     if (filtersFromParams.count) {
-    //         setToReadTags(Number(filtersFromParams.count));
-    //     }
-    // }, []);
-    //
-    // useEffect(() => {
-    //     history.push(`?tags=${toReadTags.join(' ')}`);
-    // }, [toReadTags]);
+    }, [doneData]);
 
     return (
         <div className="wrapper">
+            <button onClick={load}>Reload</button>
             <Navbar props={props}/>
             <Route path="/toread">
                 <Content props={props[0]}/>
